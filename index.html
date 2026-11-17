@@ -13,8 +13,11 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="format-detection" content="telephone=no">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23FFF7F2'/%3E%3Ccircle cx='24' cy='29' r='12' fill='%23FF6F9C'/%3E%3Ccircle cx='40' cy='29' r='12' fill='%23B79CFF'/%3E%3Ccircle cx='32' cy='18' r='11' fill='%237DE3B4'/%3E%3Cpath d='M20 39h24L34 60a2.3 2.3 0 0 1-4 0Z' fill='%23F2B872'/%3E%3C/svg%3E">
+<link rel="dns-prefetch" href="https://fonts.googleapis.com">
+<link rel="dns-prefetch" href="https://fonts.gstatic.com">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="css/styles.css">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"></noscript>
 
@@ -344,6 +347,13 @@
   <div style="padding:24px;text-align:center;font-family:sans-serif">Activa JavaScript en tu navegador para usar la app de Mad.</div>
 </noscript>
 
-<script src="js/app.js"></script>
+<script src="js/app.js" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  });
+}
+</script>
 </body>
 </html>
