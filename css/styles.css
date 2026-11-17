@@ -729,7 +729,11 @@ svg {
   transition: transform .13s ease, border-color .16s ease, background .16s ease, box-shadow .16s ease;
   overflow: hidden;
   cursor: pointer;
-  user-select: none
+  user-select: none;
+  touch-action: manipulation;
+  contain: layout style;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 124px
 }
 
 .product-card::after {
@@ -1252,7 +1256,10 @@ svg {
   border-radius: 20px;
   padding: 14px;
   box-shadow: var(--shadow-sm);
-  transition: border-color .16s ease, background .16s ease
+  transition: border-color .16s ease, background .16s ease;
+  contain: layout style;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 120px
 }
 
 .order-card.is-done {
