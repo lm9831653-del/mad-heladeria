@@ -567,9 +567,7 @@
     const pendingPill = $('#diaPending');
     pendingPill.textContent = orders.length ? (pending === 0 ? 'Todo entregado' : pending + ' por entregar') : 'Sin pedidos';
     pendingPill.classList.toggle('all-done', orders.length > 0 && pending === 0);
-    const badge = $('#navDiaBadge');
-    badge.hidden = pending === 0;
-    badge.textContent = pending > 99 ? '99+' : pending;
+    updateNavBadge();
     $('#ordersList').innerHTML = orders.length ? orders.map(orderCardHTML).join('') : emptyHTML(
       'Aún no hay pedidos',
       'Cuando guardes el primer pedido del día aparecerá aquí con su hora, forma de pago y total.',
@@ -754,16 +752,30 @@
     if (el) el.textContent = shortDateLabel();
   }
 
+  function updateNavBadge() {
+    const badge = $('#navDiaBadge');
+    if (!badge) return;
+    const pending = state.orders.filter(function (o) { return !o.delivered; }).length;
+    badge.hidden = pending === 0;
+    badge.textContent = pending > 99 ? '99+' : pending;
+  }
+
   function renderAll() {
     renderHeaderDate();
-    renderCatChips();
-    renderProducts();
-    renderSummary();
-    renderDia();
-    renderCierre();
-    renderPrecios();
-    updateResetButton();
     applyTheme();
+    updateNavBadge();
+    if (ui.view === 'pedido') {
+      renderCatChips();
+      renderProducts();
+      renderSummary();
+    } else if (ui.view === 'dia') {
+      renderDia();
+    } else if (ui.view === 'cierre') {
+      renderCierre();
+    } else if (ui.view === 'precios') {
+      renderPrecios();
+      updateResetButton();
+    }
   }
 
   function updateOverlay() {
@@ -893,11 +905,12 @@
     clearTimeout(cancelTimer);
     persistNow();
     closeSheet();
+    updateNavBadge();
     renderCatChips();
     renderProducts();
     renderSummary();
-    renderDia();
-    renderCierre();
+    if (ui.view === 'dia') renderDia();
+    else if (ui.view === 'cierre') renderCierre();
     renderHeaderDate();
     toast('Pedido guardado · ' + fmt(total));
     buzz([12, 40, 18]);
@@ -1324,12 +1337,15 @@
   function init() {
     applyTheme();
     renderAll();
-    if (ui.query || ui.priceQuery) {
+    if (ui.query) {
       renderCatChips();
       renderProducts();
-      renderPrecios();
     }
-    setupHomeScreen();
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(setupHomeScreen);
+    } else {
+      setTimeout(setupHomeScreen, 300);
+    }
   }
 
   bindEvents();
