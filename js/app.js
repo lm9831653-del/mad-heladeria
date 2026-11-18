@@ -2,7 +2,7 @@
 (function () {
   /* ===== CARTA ===== */
   const PRODUCTS = [
-    { id: 'ensalada-frutas', name: 'Ensalada de frutas', price: 12000, cat: 'postres' },
+    { id: 'ensalada-frutas', name: 'Ensalada júnior', price: 12000, cat: 'postres' },
     { id: 'ensalada-especial', name: 'Ensalada especial', price: 15000, cat: 'postres' },
     { id: 'banana-split', name: 'Banana split', price: 12000, cat: 'postres' },
     { id: 'brownie-helado', name: 'Brownie con helado', price: 11000, cat: 'postres' },
@@ -65,7 +65,8 @@
     { id: 'helado-1-bolita', name: 'Helado 1 bolita', price: 3500, cat: 'helados' },
     { id: 'helado-2-bolitas', name: 'Helado 2 bolitas', price: 4800, cat: 'helados' },
     { id: 'heladino-minions', name: 'Heladino minions', price: 4500, cat: 'helados' },
-    { id: 'dracula', name: 'Drácula', price: 5500, cat: 'helados' }
+    { id: 'dracula', name: 'Drácula', price: 5500, cat: 'helados' },
+    { id: 'helado-explosion', name: 'Helado explosión', price: 5500, cat: 'helados' }
   ];
 
   const CATEGORIES = [
@@ -79,6 +80,8 @@
   const PAYMENTS = [
     { id: 'efectivo', label: 'Efectivo', color: 'var(--green)', soft: 'var(--green-soft)' },
     { id: 'nequi', label: 'Nequi', color: 'var(--purple)', soft: 'var(--purple-soft)' },
+    { id: 'daviplata', label: 'Daviplata', color: '#E11D48', soft: '#FFE4E6' },
+    { id: 'bold', label: 'Bold', color: '#EA580C', soft: '#FFEDD5' },
     { id: 'transferencia', label: 'Transferencia', color: 'var(--blue)', soft: 'var(--blue-soft)' }
   ];
 
@@ -107,7 +110,8 @@
     bebidas: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6h11l-1.2 14a2 2 0 0 1-2 1.8H9.2a2 2 0 0 1-2-1.8L6 6Z"/><path d="M5 6h13"/><path d="m13 5 3.5-3"/><path d="M9.5 10.5v6M13 10.5v4"/></svg>',
     ninos: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.2a4.5 4.5 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg>',
     helados: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9.5h8a4 4 0 0 0-8 0Z"/><path d="m8 9.5 4 11 4-11"/><path d="M8.8 12.5h6.4"/></svg>',
-    lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10" width="15" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>'
+    lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4.5" y="10" width="15" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>',
+    edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>'
   };
 
   const systemDark = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
@@ -117,7 +121,8 @@
       version: 1,
       prices: Object.assign({}, DEFAULT_PRICES),
       orders: [],
-      draft: { items: {}, payment: null, delivery: 'mesa' },
+      expenses: [],
+      draft: { items: {}, takeaway: {}, payment: null },
       theme: 'auto'
     };
   }
@@ -134,15 +139,33 @@
       const itemPrice = Number(item.price);
       const price = Number.isFinite(itemPrice) && itemPrice >= 0 ? Math.round(itemPrice) : DEFAULT_PRICES[item.id];
       const name = typeof item.name === 'string' && item.name ? item.name : product.name;
-      const surcharge = Number(item.surcharge) || 0;
-      return { id: item.id, name: name, price: price, surcharge: surcharge, qty: Math.min(qty, 999) };
+      const isPostre = product.cat === 'postres';
+      const takeawayQty = isPostre ? Math.max(0, Math.min(qty, Math.floor(Number(item.takeawayQty)) || (item.surcharge > 0 ? qty : 0))) : 0;
+      const tableQty = qty - takeawayQty;
+      const surcharge = takeawayQty * 1000;
+      return {
+        id: item.id,
+        name: name,
+        price: price,
+        qty: Math.min(qty, 999),
+        takeawayQty: takeawayQty,
+        tableQty: tableQty,
+        surcharge: surcharge
+      };
     }).filter(Boolean);
     if (!items.length) return null;
-    const total = items.reduce(function (sum, item) { return sum + item.price * item.qty; }, 0);
+    const total = items.reduce(function (sum, item) { return sum + (item.price * item.qty) + item.surcharge; }, 0);
     const at = Number(order.at);
     const payment = PAYMENT_BY_ID.has(order.payment) ? order.payment : 'efectivo';
-    const delivery = order.delivery === 'llevar' ? 'llevar' : 'mesa';
     const deliveredAt = Number(order.deliveredAt);
+    const hasAnyTakeaway = items.some(function (i) { return (i.takeawayQty || 0) > 0; });
+    const hasAnyTable = items.some(function (i) { return (i.tableQty || 0) > 0; });
+    let delivery = order.delivery || 'mesa';
+    if (!order.delivery) {
+      if (hasAnyTakeaway && hasAnyTable) delivery = 'mixto';
+      else if (hasAnyTakeaway) delivery = 'llevar';
+      else delivery = 'mesa';
+    }
     return {
       id: typeof order.id === 'string' && order.id ? order.id : 'p-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6),
       at: Number.isFinite(at) ? at : Date.now(),
@@ -171,6 +194,14 @@
       if (Array.isArray(data.orders)) {
         base.orders = data.orders.map(normalizeOrder).filter(Boolean).sort(function (a, b) { return b.at - a.at; });
       }
+      if (Array.isArray(data.expenses)) {
+        base.expenses = data.expenses.filter(function (e) {
+          return e && typeof e.name === 'string' && e.name.trim() &&
+                 Number.isFinite(Number(e.price)) && Number(e.price) >= 0;
+        }).map(function (e) {
+          return { id: e.id || uid(), name: String(e.name).trim().slice(0, 80), price: Math.round(Number(e.price)), at: Number(e.at) || Date.now() };
+        });
+      }
       if (data.draft && typeof data.draft === 'object') {
         const items = data.draft.items;
         if (items && typeof items === 'object') {
@@ -179,8 +210,16 @@
             if (PRODUCT_BY_ID.has(id) && base.prices[id] > 0 && qty > 0) base.draft.items[id] = Math.min(qty, 999);
           });
         }
+        if (data.draft.takeaway && typeof data.draft.takeaway === 'object') {
+          Object.keys(data.draft.takeaway).forEach(function (id) {
+            const tQty = Math.floor(Number(data.draft.takeaway[id]));
+            const maxQty = base.draft.items[id] || 0;
+            if (tQty > 0 && maxQty > 0) {
+              base.draft.takeaway[id] = Math.min(tQty, maxQty);
+            }
+          });
+        }
         if (PAYMENT_BY_ID.has(data.draft.payment)) base.draft.payment = data.draft.payment;
-        if (data.draft.delivery === 'llevar' || data.draft.delivery === 'mesa') base.draft.delivery = data.draft.delivery;
       }
       if (['auto', 'light', 'dark'].indexOf(data.theme) !== -1) base.theme = data.theme;
     } catch (error) {
@@ -201,7 +240,8 @@
     armedDelete: null,
     armedClose: false,
     armedReset: false,
-    paymentWarn: false
+    paymentWarn: false,
+    editingOrderId: null
   };
 
   let saveTimer = null;
@@ -271,24 +311,30 @@
   function currentCategory() { return CATEGORY_BY_ID.get(ui.cat) || CATEGORIES[0]; }
 
   function draftLines() {
-    const isLlevar = state.draft.delivery === 'llevar';
+    if (!state.draft.takeaway) state.draft.takeaway = {};
     return Object.keys(state.draft.items).map(function (id) {
       const product = PRODUCT_BY_ID.get(id);
       const qty = Math.floor(Number(state.draft.items[id]));
       const basePrice = priceOf(id);
       if (!product || !(qty > 0) || basePrice <= 0) return null;
       const isPostre = product.cat === 'postres';
-      const surcharge = (isLlevar && isPostre) ? 1000 : 0;
-      const unitPrice = basePrice + surcharge;
+      const rawTakeaway = Math.floor(Number(state.draft.takeaway[id])) || 0;
+      const takeawayQty = isPostre ? Math.max(0, Math.min(qty, rawTakeaway)) : 0;
+      const tableQty = qty - takeawayQty;
+      const surcharge = takeawayQty * 1000;
+      const lineTotal = (basePrice * qty) + surcharge;
       return {
         id: id,
         name: product.name,
         cat: product.cat,
+        isPostre: isPostre,
         basePrice: basePrice,
-        surcharge: surcharge,
-        price: unitPrice,
+        price: basePrice,
         qty: qty,
-        lineTotal: unitPrice * qty
+        takeawayQty: takeawayQty,
+        tableQty: tableQty,
+        surcharge: surcharge,
+        lineTotal: lineTotal
       };
     }).filter(Boolean);
   }
@@ -413,16 +459,17 @@
     const qty = draftQty();
     const total = draftTotal();
     const bar = $('#summaryBar');
+    const isEditing = Boolean(ui.editingOrderId);
     $('#sumQty').textContent = qty;
     $('#sumTotal').textContent = fmt(total);
     if (qty > 0) {
       bar.classList.remove('is-empty');
-      $('#sumTitle').textContent = 'Pedido en curso';
-      $('#sumHint').textContent = 'Toca para revisar, cobrar y guardar';
-      bar.setAttribute('aria-label', 'Abrir detalle del pedido: ' + qty + ' productos, total ' + fmt(total));
+      $('#sumTitle').textContent = isEditing ? '✏️ Editando pedido' : 'Pedido en curso';
+      $('#sumHint').textContent = isEditing ? 'Toca para revisar y actualizar' : 'Toca para revisar, cobrar y guardar';
+      bar.setAttribute('aria-label', (isEditing ? 'Actualizar pedido: ' : 'Abrir detalle del pedido: ') + qty + ' productos, total ' + fmt(total));
     } else {
       bar.classList.add('is-empty');
-      $('#sumTitle').textContent = 'Tu pedido está vacío';
+      $('#sumTitle').textContent = isEditing ? 'Pedido vacío' : 'Tu pedido está vacío';
       $('#sumHint').textContent = 'Toca un producto para empezar';
       bar.setAttribute('aria-label', 'Abrir detalle del pedido. Está vacío');
     }
@@ -431,9 +478,29 @@
   /* ===== RENDER: DETALLE ===== */
   function orderItemHTML(line) {
     const surchargeBadge = line.surcharge > 0
-      ? '<span class="oi-surcharge">+ $1.000 llevar</span>'
+      ? '<span class="oi-surcharge">+ $' + (line.surcharge).toLocaleString('es-CO') + ' llevar</span>'
       : '';
-    return '<div class="order-item">' +
+
+    const takeawayRow = line.isPostre
+      ? '<div class="oi-takeaway-row">' +
+          '<div class="oi-takeaway-info">' +
+            '<span class="oi-takeaway-title">🥡 ¿Cuántos para llevar? (+ $1.000 c/u)</span>' +
+            '<span class="oi-takeaway-breakdown">' +
+              (line.tableQty > 0 ? '<span class="tb-mesa">🍽️ ' + line.tableQty + ' en mesa</span>' : '') +
+              (line.tableQty > 0 && line.takeawayQty > 0 ? ' · ' : '') +
+              (line.takeawayQty > 0 ? '<span class="tb-llevar">🥡 ' + line.takeawayQty + ' para llevar</span>' : (line.tableQty > 0 ? '' : '<span class="tb-mesa">🍽️ Todos en mesa</span>')) +
+              (line.takeawayQty === 0 && line.tableQty > 0 ? '<span class="tb-subhint"> (0 para llevar)</span>' : '') +
+            '</span>' +
+          '</div>' +
+          '<div class="oi-takeaway-stepper">' +
+            '<button type="button" class="oi-step-btn minus" data-takeaway-step="minus" data-id="' + line.id + '"' + (line.takeawayQty <= 0 ? ' disabled' : '') + ' aria-label="Menos para llevar de ' + esc(line.name) + '">' + ICON.minus + '</button>' +
+            '<span class="oi-step-qty" aria-label="' + line.takeawayQty + ' para llevar">' + line.takeawayQty + '</span>' +
+            '<button type="button" class="oi-step-btn plus" data-takeaway-step="plus" data-id="' + line.id + '"' + (line.takeawayQty >= line.qty ? ' disabled' : '') + ' aria-label="Más para llevar de ' + esc(line.name) + '">' + ICON.plus + '</button>' +
+          '</div>' +
+        '</div>'
+      : '';
+
+    return '<div class="order-item' + (line.isPostre ? ' is-postre' : '') + '">' +
       '<div class="oi-main"><span class="oi-name">' + esc(line.name) + '</span><span class="oi-unit">' + fmt(line.price) + ' c/u' + surchargeBadge + '</span></div>' +
       '<span class="oi-total">' + fmt(line.lineTotal) + '</span>' +
       '<div class="oi-controls">' +
@@ -441,20 +508,31 @@
         '<span class="oi-qty" aria-label="' + line.qty + ' unidades">' + line.qty + '</span>' +
         '<button type="button" class="oi-btn plus" data-oi="plus" data-id="' + line.id + '" aria-label="Agregar una unidad de ' + esc(line.name) + '">' + ICON.plus + '</button>' +
         '<button type="button" class="oi-x" data-oi="remove" data-id="' + line.id + '" aria-label="Quitar ' + esc(line.name) + ' del pedido">' + ICON.x + '</button>' +
-      '</div></div>';
+      '</div>' +
+      takeawayRow +
+    '</div>';
   }
 
   function updateCancelButton() {
     const button = $('#cancelOrderBtn');
     if (!button) return;
+    const isEditing = Boolean(ui.editingOrderId);
     button.classList.toggle('is-armed', ui.armedCancel);
-    button.textContent = ui.armedCancel ? '¿Cancelar? Toca otra vez' : 'Cancelar pedido';
+    if (isEditing) {
+      button.textContent = ui.armedCancel ? '¿Descartar cambios? Toca otra vez' : 'Cancelar edición';
+    } else {
+      button.textContent = ui.armedCancel ? '¿Cancelar? Toca otra vez' : 'Cancelar pedido';
+    }
   }
 
   function renderSheet() {
     const lines = draftLines();
     const total = draftTotal();
     const qty = draftQty();
+    const isEditing = Boolean(ui.editingOrderId);
+    $('#sheetTitle').textContent = isEditing ? 'Editar pedido' : 'Tu pedido';
+    const eyebrow = $('.sheet-head .eyebrow', $('#orderSheet'));
+    if (eyebrow) eyebrow.textContent = isEditing ? 'Modifica productos o pago' : 'Revisa y cobra';
     $('#sheetCount').textContent = qty > 0 ? (qty === 1 ? '1 producto en el pedido' : qty + ' productos en el pedido') : 'Sin productos todavía';
     $('#sheetTotal').textContent = fmt(total);
     const items = $('#sheetItems');
@@ -469,15 +547,33 @@
       if (deliveryBlock) deliveryBlock.hidden = false;
     }
 
-    const isLlevar = state.draft.delivery === 'llevar';
+    const postreLines = lines.filter(function (l) { return l.isPostre; });
+    const hasPostres = postreLines.length > 0;
+    const totalPostres = postreLines.reduce(function (sum, l) { return sum + l.qty; }, 0);
+    const totalTakeaway = postreLines.reduce(function (sum, l) { return sum + l.takeawayQty; }, 0);
+
+    const isAllLlevar = hasPostres ? (totalTakeaway === totalPostres && totalPostres > 0) : (state.draft.delivery === 'llevar');
+    const isAllMesa = hasPostres ? (totalTakeaway === 0) : (state.draft.delivery === 'mesa');
+    const isMixto = hasPostres && totalTakeaway > 0 && totalTakeaway < totalPostres;
+
     $$('#deliveryOptions .delivery-btn').forEach(function (button) {
-      const selected = (button.dataset.delivery === 'llevar') === isLlevar;
+      const mode = button.dataset.delivery;
+      let selected = false;
+      if (mode === 'mesa') selected = isAllMesa;
+      else if (mode === 'llevar') selected = isAllLlevar;
       button.classList.toggle('is-selected', selected);
       button.setAttribute('aria-pressed', selected ? 'true' : 'false');
     });
+
     const deliveryHint = $('#deliveryHint');
     if (deliveryHint) {
-      deliveryHint.textContent = isLlevar ? 'Para llevar (+ $1.000 en postres)' : 'En mesa';
+      if (isMixto) {
+        deliveryHint.textContent = 'Mixto: ' + (totalPostres - totalTakeaway) + ' mesa · ' + totalTakeaway + ' llevar';
+      } else if (isAllLlevar) {
+        deliveryHint.textContent = hasPostres ? 'Todos para llevar (+ $1.000 c/u)' : 'Para llevar';
+      } else {
+        deliveryHint.textContent = 'Todos en mesa';
+      }
     }
 
     $$('#payOptions .pay-btn').forEach(function (button) {
@@ -492,14 +588,42 @@
     const saveButton = $('#saveOrderBtn');
     saveButton.classList.toggle('is-locked', locked);
     saveButton.setAttribute('aria-disabled', locked ? 'true' : 'false');
-    saveButton.innerHTML = '<span id="saveLabel">Guardar pedido</span>' + (locked ? ICON.lock : ICON.check);
+    saveButton.innerHTML = '<span id="saveLabel">' + (isEditing ? 'Actualizar pedido' : 'Guardar pedido') + '</span>' + (locked ? ICON.lock : ICON.check);
     updateCancelButton();
   }
 
   function chooseDelivery(delivery) {
     if (delivery !== 'llevar' && delivery !== 'mesa') return;
     state.draft.delivery = delivery;
+    if (!state.draft.takeaway) state.draft.takeaway = {};
+    if (delivery === 'mesa') {
+      state.draft.takeaway = {};
+    } else if (delivery === 'llevar') {
+      Object.keys(state.draft.items).forEach(function (id) {
+        const prod = PRODUCT_BY_ID.get(id);
+        if (prod && prod.cat === 'postres') {
+          state.draft.takeaway[id] = state.draft.items[id];
+        }
+      });
+    }
     persistSoon();
+    renderSheet();
+    renderSummary();
+    buzz(6);
+  }
+
+  function adjustTakeaway(id, delta) {
+    if (!state.draft.takeaway) state.draft.takeaway = {};
+    const qty = Math.floor(Number(state.draft.items[id])) || 0;
+    if (qty <= 0) return;
+    const current = Math.floor(Number(state.draft.takeaway[id])) || 0;
+    const next = Math.max(0, Math.min(qty, current + delta));
+    if (next === 0) {
+      delete state.draft.takeaway[id];
+    } else {
+      state.draft.takeaway[id] = next;
+    }
+    persistNow();
     renderSheet();
     renderSummary();
     buzz(6);
@@ -531,12 +655,21 @@
   /* ===== RENDER: DÍA ===== */
   function orderCardHTML(order) {
     const payment = PAYMENT_BY_ID.get(order.payment) || PAYMENTS[0];
-    const isLlevar = order.delivery === 'llevar';
-    const deliveryChip = isLlevar
-      ? '<span class="delivery-chip llevar">🥡 Llevar</span>'
-      : '<span class="delivery-chip mesa">🍽️ Mesa</span>';
+    let deliveryChip = '<span class="delivery-chip mesa">🍽️ Mesa</span>';
+    if (order.delivery === 'llevar') {
+      deliveryChip = '<span class="delivery-chip llevar">🥡 Llevar</span>';
+    } else if (order.delivery === 'mixto') {
+      deliveryChip = '<span class="delivery-chip mixto">🥡🍽️ Mixto</span>';
+    }
     const items = order.items.map(function (item) {
-      const extra = (item.surcharge > 0) ? ' <small class="oc-llevar">(llevar +$1.000)</small>' : '';
+      let extra = '';
+      if (item.takeawayQty > 0) {
+        if (item.tableQty > 0) {
+          extra = ' <small class="oc-llevar">(' + item.tableQty + ' mesa · ' + item.takeawayQty + ' llevar)</small>';
+        } else {
+          extra = ' <small class="oc-llevar">(llevar +$' + (item.surcharge).toLocaleString('es-CO') + ')</small>';
+        }
+      }
       return '<div class="oc-line"><span class="oc-qty">' + item.qty + '×</span><span>' + esc(item.name) + extra + '</span></div>';
     }).join('');
     const done = order.delivered;
@@ -550,6 +683,7 @@
       '<div class="oc-bottom"><span class="oc-status' + (done ? ' done' : '') + '">' + (done ? 'Entregado' : 'Por entregar') + '</span><span class="oc-total">' + fmt(order.total) + '</span></div>' +
       '<div class="oc-actions">' +
         '<button type="button" class="oc-btn deliver-btn' + (done ? ' is-done' : '') + '" data-deliver="' + order.id + '" aria-pressed="' + (done ? 'true' : 'false') + '">' + ICON.check + (done ? ' Entregado · deshacer' : ' Marcar entregado') + '</button>' +
+        '<button type="button" class="oc-btn edit-btn" data-edit="' + order.id + '" aria-label="Editar pedido de las ' + esc(timeLabel(order.at)) + '">' + ICON.edit + ' Editar</button>' +
         deleteButton +
       '</div></article>';
   }
@@ -567,14 +701,54 @@
     const pendingPill = $('#diaPending');
     pendingPill.textContent = orders.length ? (pending === 0 ? 'Todo entregado' : pending + ' por entregar') : 'Sin pedidos';
     pendingPill.classList.toggle('all-done', orders.length > 0 && pending === 0);
-    const badge = $('#navDiaBadge');
-    badge.hidden = pending === 0;
-    badge.textContent = pending > 99 ? '99+' : pending;
+    updateNavBadge();
     $('#ordersList').innerHTML = orders.length ? orders.map(orderCardHTML).join('') : emptyHTML(
       'Aún no hay pedidos',
       'Cuando guardes el primer pedido del día aparecerá aquí con su hora, forma de pago y total.',
       ICON.receipt
     );
+    renderGastos();
+  }
+
+  /* ===== RENDER: GASTOS ===== */
+  function renderGastos() {
+    const expenses = state.expenses || [];
+    const gastosTotal = expenses.reduce(function (s, e) { return s + e.price; }, 0);
+    const listEl = $('#gastosList');
+    const totalEl = $('#gastosTotal');
+    const totalRow = $('#gastosTotalRow');
+    if (!listEl) return;
+    listEl.innerHTML = expenses.length ? expenses.map(function (e) {
+      return '<div class="gasto-row">' +
+        '<span class="gasto-name">' + esc(e.name) + '</span>' +
+        '<span class="gasto-price">' + fmt(e.price) + '</span>' +
+        '<button type="button" class="gasto-del" data-gasto-del="' + esc(e.id) + '" aria-label="Eliminar gasto">×</button>' +
+        '</div>';
+    }).join('') : '<p class="gasto-empty">Aún no hay gastos registrados hoy.</p>';
+    if (totalEl) totalEl.textContent = fmt(gastosTotal);
+    if (totalRow) totalRow.hidden = expenses.length === 0;
+  }
+
+  function addGasto(name, price) {
+    const cleanName = String(name).trim().slice(0, 80);
+    const cleanPrice = Math.round(Number(String(price).replace(/\D/g, '')));
+    if (!cleanName || !(cleanPrice > 0)) { toast('Escribe nombre y precio válido'); return; }
+    if (!Array.isArray(state.expenses)) state.expenses = [];
+    state.expenses.push({ id: uid(), name: cleanName, price: cleanPrice, at: Date.now() });
+    persistNow();
+    renderGastos();
+    if (ui.view === 'cierre') renderCierre();
+    toast('Gasto registrado · ' + fmt(cleanPrice));
+    buzz(7);
+  }
+
+  function deleteGasto(id) {
+    state.expenses = (state.expenses || []).filter(function (e) { return e.id !== id; });
+    persistNow();
+    renderGastos();
+    if (ui.view === 'cierre') renderCierre();
+    toast('Gasto eliminado');
+    buzz(8);
   }
 
   /* ===== RENDER: CIERRE ===== */
@@ -629,6 +803,15 @@
     const subtitle = orders.length
       ? orders.length + (orders.length === 1 ? ' pedido' : ' pedidos') + ' · ' + units + (units === 1 ? ' producto vendido' : ' productos vendidos')
       : 'Aún no hay ventas registradas hoy';
+    const expenses = state.expenses || [];
+    const gastosTotal = expenses.reduce(function (s, e) { return s + e.price; }, 0);
+    const ganancia = total - gastosTotal;
+    const gastosRows = expenses.map(function (e) {
+      return '<div class="gasto-row cierre-gasto">' +
+        '<span class="gasto-name">' + esc(e.name) + '</span>' +
+        '<span class="gasto-price">− ' + fmt(e.price) + '</span>' +
+        '</div>';
+    }).join('');
 
     $('#cierreRoot').innerHTML = `
       <div class="page-head compact">
@@ -666,6 +849,18 @@
       <section class="panel">
         <div class="panel-head"><h3>Productos vendidos</h3><small>${units} ${units === 1 ? 'unidad' : 'unidades'}</small></div>
         ${sold.length ? '<div class="sold-rows">' + soldRows + '</div>' : '<p class="close-tip" style="margin:5px 0 1px">Todavía no hay productos vendidos hoy.</p>'}
+      </section>
+
+      <section class="panel panel-gastos">
+        <div class="panel-head"><h3>🛒 Gastos del día</h3><small class="g-red">${expenses.length ? '− ' + fmt(gastosTotal) : 'Sin gastos'}</small></div>
+        ${expenses.length ? '<div class="gasto-rows">' + gastosRows + '</div>' : '<p class="close-tip" style="margin:5px 0 1px">No se registraron gastos hoy.</p>'}
+      </section>
+
+      <section class="panel ganancia-panel">
+        <div class="panel-head"><h3>Ganancia neta</h3></div>
+        <div class="ganancia-row"><span>Ventas totales</span><span>${fmt(total)}</span></div>
+        <div class="ganancia-row"><span>Gastos del día</span><span class="g-red">− ${fmt(gastosTotal)}</span></div>
+        <div class="ganancia-row total"><span>Neto</span><span class="${ganancia >= 0 ? 'g-green' : 'g-red'}">${fmt(ganancia)}</span></div>
       </section>
 
       <section class="close-zone">
@@ -754,16 +949,30 @@
     if (el) el.textContent = shortDateLabel();
   }
 
+  function updateNavBadge() {
+    const badge = $('#navDiaBadge');
+    if (!badge) return;
+    const pending = state.orders.filter(function (o) { return !o.delivered; }).length;
+    badge.hidden = pending === 0;
+    badge.textContent = pending > 99 ? '99+' : pending;
+  }
+
   function renderAll() {
     renderHeaderDate();
-    renderCatChips();
-    renderProducts();
-    renderSummary();
-    renderDia();
-    renderCierre();
-    renderPrecios();
-    updateResetButton();
     applyTheme();
+    updateNavBadge();
+    if (ui.view === 'pedido') {
+      renderCatChips();
+      renderProducts();
+      renderSummary();
+    } else if (ui.view === 'dia') {
+      renderDia();
+    } else if (ui.view === 'cierre') {
+      renderCierre();
+    } else if (ui.view === 'precios') {
+      renderPrecios();
+      updateResetButton();
+    }
   }
 
   function updateOverlay() {
@@ -790,6 +999,7 @@
       renderCatChips();
       renderProducts();
       renderSummary();
+      updateEditBanner();
     } else if (view === 'dia') {
       renderDia();
     } else if (view === 'cierre') {
@@ -820,8 +1030,15 @@
   function adjustLine(id, delta) {
     const current = Math.floor(Number(state.draft.items[id])) || 0;
     const next = current + delta;
-    if (next <= 0) delete state.draft.items[id];
-    else state.draft.items[id] = Math.min(next, 999);
+    if (next <= 0) {
+      delete state.draft.items[id];
+      if (state.draft.takeaway) delete state.draft.takeaway[id];
+    } else {
+      state.draft.items[id] = Math.min(next, 999);
+      if (state.draft.takeaway && state.draft.takeaway[id]) {
+        state.draft.takeaway[id] = Math.min(state.draft.takeaway[id], state.draft.items[id]);
+      }
+    }
     persistNow();
     refreshProductCard(id);
     renderSummary();
@@ -831,6 +1048,7 @@
 
   function removeLine(id) {
     delete state.draft.items[id];
+    if (state.draft.takeaway) delete state.draft.takeaway[id];
     persistNow();
     refreshProductCard(id);
     renderSummary();
@@ -845,6 +1063,73 @@
     persistNow();
     renderSheet();
     buzz(6);
+  }
+
+  function updateEditBanner() {
+    const banner = $('#editBanner');
+    if (!banner) return;
+    if (!ui.editingOrderId) {
+      banner.hidden = true;
+      banner.innerHTML = '';
+      return;
+    }
+    const order = state.orders.find(function (o) { return o.id === ui.editingOrderId; });
+    if (!order) {
+      ui.editingOrderId = null;
+      banner.hidden = true;
+      banner.innerHTML = '';
+      return;
+    }
+    banner.hidden = false;
+    banner.innerHTML =
+      '<div class="edit-banner-main">' +
+        '<span class="eb-tag">Modo edición</span>' +
+        '<span class="eb-title">Pedido de las ' + esc(timeLabel(order.at)) + ' (' + fmt(order.total) + ')</span>' +
+      '</div>' +
+      '<div class="eb-actions">' +
+        '<button type="button" class="eb-btn open" id="ebOpenSheet">Ver pedido</button>' +
+        '<button type="button" class="eb-btn cancel" id="ebCancel">Descartar</button>' +
+      '</div>';
+  }
+
+  function handleEditOrder(id) {
+    const order = state.orders.find(function (o) { return o.id === id; });
+    if (!order) return;
+    ui.editingOrderId = id;
+    ui.armedCancel = false;
+    clearTimeout(cancelTimer);
+    state.draft.items = {};
+    state.draft.takeaway = {};
+    order.items.forEach(function (item) {
+      state.draft.items[item.id] = item.qty;
+      if (item.takeawayQty > 0) {
+        state.draft.takeaway[item.id] = item.takeawayQty;
+      }
+    });
+    state.draft.payment = order.payment;
+    state.draft.delivery = order.delivery || 'mesa';
+    persistNow();
+    setView('pedido');
+    updateEditBanner();
+    renderProducts();
+    renderSummary();
+    openSheet();
+    toast('Editando pedido de las ' + timeLabel(order.at));
+    buzz(10);
+  }
+
+  function cancelEditing() {
+    ui.editingOrderId = null;
+    ui.armedCancel = false;
+    clearTimeout(cancelTimer);
+    state.draft = { items: {}, takeaway: {}, payment: null, delivery: 'mesa' };
+    persistNow();
+    updateEditBanner();
+    closeSheet();
+    renderProducts();
+    renderSummary();
+    toast('Edición cancelada');
+    buzz(8);
   }
 
   function saveOrder() {
@@ -864,27 +1149,54 @@
       return;
     }
     const total = lines.reduce(function (sum, line) { return sum + line.lineTotal; }, 0);
-    const order = {
-      id: uid(),
-      at: Date.now(),
-      payment: state.draft.payment,
-      delivery: state.draft.delivery || 'mesa',
-      delivered: false,
-      deliveredAt: null,
-      total: total,
-      items: lines.map(function (line) {
-        return {
-          id: line.id,
-          name: line.name,
-          price: line.price,
-          surcharge: line.surcharge || 0,
-          qty: line.qty
-        };
-      })
-    };
-    state.orders.push(order);
-    state.orders.sort(function (a, b) { return b.at - a.at; });
-    state.draft = { items: {}, payment: null, delivery: 'mesa' };
+    const postreLines = lines.filter(function (l) { return l.isPostre; });
+    const totalTakeaway = postreLines.reduce(function (sum, l) { return sum + l.takeawayQty; }, 0);
+    const totalPostres = postreLines.reduce(function (sum, l) { return sum + l.qty; }, 0);
+    let finalDelivery = state.draft.delivery || 'mesa';
+    if (postreLines.length > 0) {
+      if (totalTakeaway === 0) finalDelivery = 'mesa';
+      else if (totalTakeaway === totalPostres) finalDelivery = 'llevar';
+      else finalDelivery = 'mixto';
+    }
+
+    const mappedItems = lines.map(function (line) {
+      return {
+        id: line.id,
+        name: line.name,
+        price: line.price,
+        surcharge: line.surcharge || 0,
+        qty: line.qty,
+        takeawayQty: line.takeawayQty || 0,
+        tableQty: line.tableQty != null ? line.tableQty : line.qty
+      };
+    });
+
+    const isEditing = Boolean(ui.editingOrderId);
+    if (isEditing) {
+      const orderIndex = state.orders.findIndex(function (o) { return o.id === ui.editingOrderId; });
+      if (orderIndex !== -1) {
+        state.orders[orderIndex].items = mappedItems;
+        state.orders[orderIndex].total = total;
+        state.orders[orderIndex].payment = state.draft.payment;
+        state.orders[orderIndex].delivery = finalDelivery;
+      }
+      ui.editingOrderId = null;
+    } else {
+      const order = {
+        id: uid(),
+        at: Date.now(),
+        payment: state.draft.payment,
+        delivery: finalDelivery,
+        delivered: false,
+        deliveredAt: null,
+        total: total,
+        items: mappedItems
+      };
+      state.orders.push(order);
+      state.orders.sort(function (a, b) { return b.at - a.at; });
+    }
+
+    state.draft = { items: {}, takeaway: {}, payment: null, delivery: 'mesa' };
     ui.query = '';
     const search = $('#searchInput');
     if (search) search.value = '';
@@ -892,32 +1204,37 @@
     ui.armedCancel = false;
     clearTimeout(cancelTimer);
     persistNow();
+    updateEditBanner();
     closeSheet();
+    updateNavBadge();
     renderCatChips();
     renderProducts();
     renderSummary();
-    renderDia();
-    renderCierre();
+    if (ui.view === 'dia') renderDia();
+    else if (ui.view === 'cierre') renderCierre();
     renderHeaderDate();
-    toast('Pedido guardado · ' + fmt(total));
+    toast(isEditing ? 'Pedido actualizado · ' + fmt(total) : 'Pedido guardado · ' + fmt(total));
     buzz([12, 40, 18]);
   }
 
   function handleCancelOrder() {
-    if (!draftLines().length) {
+    if (!draftLines().length && !ui.editingOrderId) {
       toast('El pedido ya está vacío');
       return;
     }
+    const isEditing = Boolean(ui.editingOrderId);
     if (ui.armedCancel) {
       clearTimeout(cancelTimer);
       ui.armedCancel = false;
-      state.draft = { items: {}, payment: null, delivery: 'mesa' };
+      ui.editingOrderId = null;
+      state.draft = { items: {}, takeaway: {}, payment: null, delivery: 'mesa' };
       persistNow();
+      updateEditBanner();
       closeSheet();
       renderProducts();
       renderSummary();
       renderCatChips();
-      toast('Pedido cancelado');
+      toast(isEditing ? 'Edición cancelada' : 'Pedido cancelado');
       buzz([10, 30, 10]);
       return;
     }
@@ -949,6 +1266,11 @@
     if (ui.armedDelete === id) {
       clearTimeout(deleteTimer);
       ui.armedDelete = null;
+      if (ui.editingOrderId === id) {
+        ui.editingOrderId = null;
+        state.draft = { items: {}, takeaway: {}, payment: null, delivery: 'mesa' };
+        updateEditBanner();
+      }
       state.orders = state.orders.filter(function (o) { return o.id !== id; });
       persistNow();
       renderDia();
@@ -973,9 +1295,11 @@
     if (ui.armedClose) {
       clearTimeout(closeTimer);
       ui.armedClose = false;
+      ui.editingOrderId = null;
       const hadOrders = state.orders.length > 0;
       state.orders = [];
-      state.draft = { items: {}, payment: null, delivery: 'mesa' };
+      state.expenses = [];
+      state.draft = { items: {}, takeaway: {}, payment: null, delivery: 'mesa' };
       ui.query = '';
       ui.priceQuery = '';
       ui.armedDelete = null;
@@ -987,6 +1311,7 @@
       $('#clearSearch').hidden = true;
       $('#clearPriceSearch').hidden = true;
       persistNow();
+      updateEditBanner();
       closeSheet();
       renderAll();
       toast(hadOrders ? 'Día cerrado. Todo listo para el siguiente' : 'Día cerrado. Todo quedó limpio');
@@ -1124,6 +1449,13 @@
         closeSheet();
         return;
       }
+      const stepBtn = event.target.closest('[data-takeaway-step]');
+      if (stepBtn) {
+        const id = stepBtn.dataset.id;
+        const dir = stepBtn.dataset.takeawayStep === 'plus' ? 1 : -1;
+        adjustTakeaway(id, dir);
+        return;
+      }
       const button = event.target.closest('[data-oi]');
       if (!button) return;
       const id = button.dataset.id;
@@ -1157,13 +1489,50 @@
         toggleDelivered(deliver.dataset.deliver);
         return;
       }
+      const edit = event.target.closest('[data-edit]');
+      if (edit) {
+        handleEditOrder(edit.dataset.edit);
+        return;
+      }
       const remove = event.target.closest('[data-delete]');
       if (remove) handleDeleteOrder(remove.dataset.delete);
     });
 
+    const editBanner = $('#editBanner');
+    if (editBanner) {
+      editBanner.addEventListener('click', function (event) {
+        if (event.target.closest('#ebOpenSheet')) {
+          openSheet();
+        } else if (event.target.closest('#ebCancel')) {
+          cancelEditing();
+        }
+      });
+    }
+
     $('#cierreRoot').addEventListener('click', function (event) {
       if (event.target.closest('[data-close-day]')) handleCloseDay();
     });
+
+    // Gastos del día
+    const gastosForm = $('#gastosForm');
+    if (gastosForm) {
+      gastosForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const nameInput = $('#gastoNameInput');
+        const priceInput = $('#gastoPriceInput');
+        addGasto(nameInput.value, priceInput.value);
+        nameInput.value = '';
+        priceInput.value = '';
+        nameInput.focus();
+      });
+    }
+    const gastosList = $('#gastosList');
+    if (gastosList) {
+      gastosList.addEventListener('click', function (e) {
+        const btn = e.target.closest('[data-gasto-del]');
+        if (btn) deleteGasto(btn.dataset.gastoDel);
+      });
+    }
 
     $('#priceSearch').addEventListener('input', function (event) {
       ui.priceQuery = event.target.value;
@@ -1324,12 +1693,16 @@
   function init() {
     applyTheme();
     renderAll();
-    if (ui.query || ui.priceQuery) {
+    if (ui.query) {
       renderCatChips();
       renderProducts();
-      renderPrecios();
     }
-    setupHomeScreen();
+    renderGastos();
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(setupHomeScreen);
+    } else {
+      setTimeout(setupHomeScreen, 300);
+    }
   }
 
   bindEvents();
