@@ -110,6 +110,8 @@
         </div>
       </div>
 
+      <div class="edit-banner" id="editBanner" hidden></div>
+
       <div class="search-box">
         <svg class="search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         <input id="searchInput" type="search" inputmode="search" placeholder="Buscar un producto…" autocomplete="off" aria-label="Buscar un producto en la carta">
@@ -167,6 +169,23 @@
         <span class="list-note">Marca entregas · doble toque para eliminar</span>
       </div>
       <div class="orders-list" id="ordersList"></div>
+
+      <!-- Gastos del día -->
+      <div class="gastos-panel">
+        <div class="list-head">
+          <h2 class="grid-title">🛒 Gastos del día</h2>
+          <span class="list-note">Lo comprado o gastado hoy</span>
+        </div>
+        <form class="gastos-form" id="gastosForm" autocomplete="off">
+          <input id="gastoNameInput" type="text" inputmode="text" placeholder="¿Qué se compró?" maxlength="80" required>
+          <label class="gastos-price-label"><span>$</span><input id="gastoPriceInput" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="Precio" maxlength="10" required></label>
+          <button type="submit" class="gastos-add-btn">+ Agregar</button>
+        </form>
+        <div id="gastosList"></div>
+        <div class="gastos-total-row" id="gastosTotalRow" hidden>
+          <span>Total gastos hoy</span><strong id="gastosTotal">$0</strong>
+        </div>
+      </div>
     </section>
 
     <!-- Vista: Cierre -->
@@ -249,21 +268,21 @@
       <div class="delivery-block" id="deliveryBlock">
         <div class="delivery-head">
           <h3>¿Cómo se entrega?</h3>
-          <span id="deliveryHint">En mesa</span>
+          <span id="deliveryHint">Todos en mesa</span>
         </div>
         <div class="delivery-options" id="deliveryOptions">
           <button class="delivery-btn is-selected" type="button" data-delivery="mesa" aria-pressed="true">
             <span class="delivery-ico">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11h18M5 11V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v5M4 11v9M20 11v9M9 11v9M15 11v9"/></svg>
             </span>
-            <span class="delivery-label">En mesa</span>
+            <span class="delivery-label">Todos en mesa</span>
             <span class="delivery-check" aria-hidden="true"></span>
           </button>
           <button class="delivery-btn" type="button" data-delivery="llevar" aria-pressed="false">
             <span class="delivery-ico">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l2 6H4l2-6Z"/><path d="M4 9v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9"/><path d="M9 13h6"/></svg>
             </span>
-            <span class="delivery-label">Para llevar</span>
+            <span class="delivery-label">Todos para llevar</span>
             <span class="delivery-note">+$1.000 ensaladas y postres</span>
             <span class="delivery-check" aria-hidden="true"></span>
           </button>
@@ -283,6 +302,404 @@
           <button class="pay-btn" type="button" data-pay="nequi" aria-pressed="false">
             <span class="pay-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="2.5" width="11" height="19" rx="3"/><path d="M10.5 18.5h3"/><path d="M9.5 8.5h5M9.5 12h5"/></svg></span>
             <span class="pay-label">Nequi</span>
+            <span class="pay-check" aria-hidden="true"></span>
+          </button>
+          <button class="pay-btn" type="button" data-pay="daviplata" aria-pressed="false">
+            <span class="pay-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M10 18h4"/><path d="M9.5 7.5h2.5a2.5 2.5 0 0 1 0 5H9.5V7.5Z"/></svg></span>
+            <span class="pay-label">Daviplata</span>
+            <span class="pay-check" aria-hidden="true"></span>
+          </button>
+          <button class="pay-btn" type="button" data-pay="bold" aria-pressed="false">
+            <span class="pay-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="3" width="13" height="18" rx="2.5"/><rect x="8" y="5.5" width="8" height="4" rx="1"/><circle cx="9" cy="12.5" r=".8" fill="currentColor"/><circle cx="12" cy="12.5" r=".8" fill="currentColor"/><circle cx="15" cy="12.5" r=".8" fill="currentColor"/><circle cx="9" cy="15.5" r=".8" fill="currentColor"/><circle cx="12" cy="15.5" r=".8" fill="currentColor"/><circle cx="15" cy="15.5" r=".8" fill="currentColor"/></svg></span>
+            <span class="pay-label">Bold</span>
+            <span class="pay-check" aria-hidden="true"></span>
+          </button>
+          <button class="pay-btn" type="button" data-pay="transferencia" aria-pressed="false">
+            <span class="pay-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5 12 4l8 5.5"/><path d="M6 10v8M10 10v8M14 10v8M18 10v8"/><path d="M3 20.5h18"/></svg></span>
+            <span class="pay-label">Transferencia</span>
+            <span class="pay-check" aria-hidden="true"></span>
+          </button>
+        </div>
+        <p class="pay-required" id="payRequired" hidden>Elige una forma de pago para poder guardar.</p>
+      </div>
+    </div>
+    <footer class="sheet-foot">
+      <div class="sheet-total-row">
+        <span>Total del pedido</span>
+        <strong id="sheetTotal">$0</strong>
+      </div>
+      <button class="save-btn" id="saveOrderBtn" type="button">
+        <span id="saveLabel">Guardar pedido</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg>
+      </button>
+      <button class="cancel-btn" id="cancelOrderBtn" type="button">Cancelar pedido</button>
+    </footer>
+  </div>
+</aside>
+
+<!-- Modal: Ayuda -->
+<div class="modal" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle" hidden>
+  <div class="modal-panel">
+    <header class="modal-head">
+      <div class="modal-badge" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="3.5"/><path d="M10.5 5.5h3M10 18.5h4"/></svg>
+      </div>
+      <div>
+        <p class="eyebrow purple">Siempre a la mano</p>
+        <h2 class="modal-title" id="helpTitle">Llévala en tu celular</h2>
+      </div>
+      <button class="sheet-close" id="helpClose" type="button" aria-label="Cerrar ayuda">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg>
+      </button>
+    </header>
+    <div class="modal-body">
+      <p class="help-intro">Guárdala como acceso directo para abrirla con un toque, como cualquier otra app.</p>
+      <ol class="help-steps">
+        <li><span class="step-num">1</span><div><strong>Abre esta página en tu celular</strong><p>Usa el navegador de tu teléfono, con el enlace de la app.</p></div></li>
+        <li><span class="step-num">2</span><div><strong>Busca "Añadir a pantalla de inicio"</strong><p><b>iPhone:</b> toca Compartir y luego "Añadir a pantalla de inicio".<br><b>Android:</b> toca los tres puntos del navegador y elige "Añadir a pantalla de inicio".</p></div></li>
+        <li><span class="step-num">3</span><div><strong>Ábrela desde su ícono "Mad"</strong><p>Verás la app a pantalla completa. Tus pedidos y precios quedan guardados en el teléfono.</p></div></li>
+      </ol>
+      <div class="help-tip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 8v5M12 16.5h.01"/><circle cx="12" cy="12" r="9"/></svg>
+        <p><strong>Sin internet:</strong> la app funciona sola porque todo está en este archivo. Ábrela una vez con conexión y déjala agregada a tu pantalla de inicio.</p>
+      </div>
+    </div>
+    <footer class="modal-foot">
+      <button class="save-btn" type="button" id="helpDone">Entendido</button>
+    </footer>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<noscript>
+  <div style="padding:24px;text-align:center;font-family:sans-serif">Activa JavaScript en tu navegador para usar la app de Mad.</div>
+</noscript>
+
+<script src="js/app.js" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  });
+}
+</script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Mad Heladería &amp; Frutería: pedidos rápidos, control del día y precios. Funciona en tu celular y guarda todo en el dispositivo.">
+<title>Mad · Heladería &amp; Frutería</title>
+<meta name="theme-color" content="#FFF7F2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#120E17" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mad">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23FFF7F2'/%3E%3Ccircle cx='24' cy='29' r='12' fill='%23FF6F9C'/%3E%3Ccircle cx='40' cy='29' r='12' fill='%23B79CFF'/%3E%3Ccircle cx='32' cy='18' r='11' fill='%237DE3B4'/%3E%3Cpath d='M20 39h24L34 60a2.3 2.3 0 0 1-4 0Z' fill='%23F2B872'/%3E%3C/svg%3E">
+<link rel="dns-prefetch" href="https://fonts.googleapis.com">
+<link rel="dns-prefetch" href="https://fonts.gstatic.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="css/styles.css">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"></noscript>
+
+<!-- Detectar tema antes de pintar para evitar flash -->
+<script>
+(function () {
+  try {
+    var raw = localStorage.getItem('mad-heladeria-v1');
+    var saved = raw ? JSON.parse(raw).theme : 'auto';
+    var darkSystem = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.dataset.theme = saved === 'dark' || ((!saved || saved === 'auto') && darkSystem) ? 'dark' : 'light';
+  } catch (error) {
+    document.documentElement.dataset.theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+})();
+</script>
+
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <a class="brand" href="#" id="brandHome" aria-label="Mad Heladería y Frutería, ir al pedido">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 48 48" fill="none">
+          <path d="M16.2 28h15.6l-6.2 13.3a1.8 1.8 0 0 1-3.2 0L16.2 28Z" fill="#F1B971"/>
+          <path d="m19.5 32 8.6 8.1M23.5 28l4.2 12" stroke="#D09445" stroke-width="1.2" stroke-linecap="round" opacity=".7"/>
+          <circle cx="18.6" cy="21.5" r="6.8" fill="#FF6F9C"/>
+          <circle cx="29.4" cy="21.5" r="6.8" fill="#B79CFF"/>
+          <circle cx="24" cy="15" r="6.9" fill="#7DE3B4"/>
+          <circle cx="29.6" cy="11.2" r="1.9" fill="#FFF2F6"/>
+          <path d="M24.8 7.2c.1-1.6 1.8-2 2.8-1.2" stroke="#0E8F67" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="brand-text">
+        <span class="brand-name">Mad<span class="brand-dot">.</span></span>
+        <span class="brand-sub">heladería &amp; frutería</span>
+      </span>
+    </a>
+    <div class="top-actions">
+      <span class="date-chip" id="headerDate">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="16" rx="4"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg>
+        <span id="headerDateText">Hoy</span>
+      </span>
+      <button class="icon-btn" id="themeBtn" type="button" aria-label="Cambiar entre tema claro y oscuro" title="Cambiar tema">
+        <span id="themeIcon"></span>
+      </button>
+      <button class="icon-btn help" id="helpBtn" type="button" aria-label="Ayuda para instalar la app" title="Ayuda">?</button>
+    </div>
+  </header>
+
+  <nav class="tabbar" aria-label="Secciones principales">
+    <div class="tabs" role="tablist" aria-label="Secciones principales">
+      <button class="tab is-active" type="button" data-view="pedido" role="tab" aria-selected="true" aria-controls="view-pedido">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9h14l-1.2 9.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8L5 9Z"/><path d="M4 9a8 8 0 0 1 16 0"/><path d="M9.5 12.7v3M14.5 12.7v3"/></svg>
+        <span>Pedido</span>
+      </button>
+      <button class="tab" type="button" data-view="dia" role="tab" aria-selected="false" aria-controls="view-dia">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3.5h10a2 2 0 0 1 2 2V21l-2.3-1.6L14.4 21 12 19.4 9.6 21l-2.3-1.5L5 21V5.5a2 2 0 0 1 2-2Z"/><path d="M9 8.5h6M9 12.5h6"/></svg>
+        <span>Día</span>
+        <span class="nav-badge" id="navDiaBadge" hidden>0</span>
+      </button>
+      <button class="tab" type="button" data-view="cierre" role="tab" aria-selected="false" aria-controls="view-cierre">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+        <span>Cierre</span>
+      </button>
+    </div>
+  </nav>
+
+  <main class="main">
+    <!-- Vista: Pedido -->
+    <section class="view is-active" id="view-pedido" role="tabpanel" aria-label="Pedido">
+      <div class="page-head">
+        <div>
+          <p class="eyebrow"><span class="eyebrow-dot"></span>La carta de hoy</p>
+          <h1 class="page-title">¿Qué se antoja hoy?</h1>
+          <p class="page-sub">Toca y suma. Así de fácil.</p>
+        </div>
+        <div class="head-doodle" aria-hidden="true">
+          <svg viewBox="0 0 64 64" fill="none">
+            <path d="M19 35h26l-10.4 22.2a2.9 2.9 0 0 1-5.2 0L19 35Z" fill="#F1B971"/>
+            <path d="m24.5 41 13.8 13M30 35l6.8 21" stroke="#CF9241" stroke-width="1.6" stroke-linecap="round" opacity=".65"/>
+            <circle cx="25" cy="27" r="10.5" fill="#FF6F9C"/>
+            <circle cx="39" cy="27" r="10.5" fill="#B79CFF"/>
+            <circle cx="32" cy="18" r="10.5" fill="#7DE3B4"/>
+            <circle cx="39.5" cy="12.5" r="3" fill="#FFF2F6"/>
+            <path d="M33.2 6.2c.2-2.1 2.5-2.7 4-1.7" stroke="#0E8F67" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="21" cy="20" r="1.4" fill="#fff" opacity=".85"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="edit-banner" id="editBanner" hidden></div>
+
+      <div class="search-box">
+        <svg class="search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="searchInput" type="search" inputmode="search" placeholder="Buscar un producto…" autocomplete="off" aria-label="Buscar un producto en la carta">
+        <button class="clear-search" id="clearSearch" type="button" aria-label="Borrar búsqueda" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+
+      <div class="cat-chips" id="catChips" role="tablist" aria-label="Categorías de productos"></div>
+
+      <div class="grid-head">
+        <h2 class="grid-title" id="gridTitle">Ensaladas y postres</h2>
+        <span class="grid-count" id="gridCount"></span>
+      </div>
+      <div class="product-grid" id="productGrid" aria-live="polite"></div>
+
+      <div class="tap-tip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v5l3.5 2"/></svg>
+        <span>Cada toque suma 1. Tu pedido queda guardado en este dispositivo aunque cierres la app.</span>
+      </div>
+    </section>
+
+    <!-- Vista: Día -->
+    <section class="view" id="view-dia" role="tabpanel" aria-label="Pedidos del día" hidden>
+      <div class="page-head compact">
+        <div>
+          <p class="eyebrow purple"><span class="eyebrow-dot" style="background:var(--purple);box-shadow:0 0 0 4px var(--purple-soft)"></span>Movimiento de hoy</p>
+          <h1 class="page-title">Pedidos del día</h1>
+          <p class="page-sub" id="diaDate">Del más reciente al más antiguo</p>
+        </div>
+        <span class="pending-pill" id="diaPending">0 por entregar</span>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card is-pink">
+          <span class="stat-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h4"/></svg>
+          </span>
+          <span class="stat-label">Vendido hoy</span>
+          <strong class="stat-value" id="diaTotal">$0</strong>
+          <span class="stat-foot"><span id="diaDelivered">0 entregados</span></span>
+        </div>
+        <div class="stat-card is-purple">
+          <span class="stat-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 9h14l-1.2 9.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8L5 9Z"/><path d="M4 9a8 8 0 0 1 16 0"/><path d="M9.5 12.7v3M14.5 12.7v3"/></svg>
+          </span>
+          <span class="stat-label">Pedidos</span>
+          <strong class="stat-value" id="diaCount">0</strong>
+          <span class="stat-foot" id="diaAvg">Ticket promedio $0</span>
+        </div>
+      </div>
+
+      <div class="list-head">
+        <h2 class="grid-title">Cada pedido</h2>
+        <span class="list-note">Marca entregas · doble toque para eliminar</span>
+      </div>
+      <div class="orders-list" id="ordersList"></div>
+
+      <!-- Gastos del día -->
+      <div class="gastos-panel">
+        <div class="list-head">
+          <h2 class="grid-title">🛒 Gastos del día</h2>
+          <span class="list-note">Lo comprado o gastado hoy</span>
+        </div>
+        <form class="gastos-form" id="gastosForm" autocomplete="off">
+          <input id="gastoNameInput" type="text" inputmode="text" placeholder="¿Qué se compró?" maxlength="80" required>
+          <label class="gastos-price-label"><span>$</span><input id="gastoPriceInput" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="Precio" maxlength="10" required></label>
+          <button type="submit" class="gastos-add-btn">+ Agregar</button>
+        </form>
+        <div id="gastosList"></div>
+        <div class="gastos-total-row" id="gastosTotalRow" hidden>
+          <span>Total gastos hoy</span><strong id="gastosTotal">$0</strong>
+        </div>
+      </div>
+    </section>
+
+    <!-- Vista: Cierre -->
+    <section class="view" id="view-cierre" role="tabpanel" aria-label="Cierre del día" hidden>
+      <div id="cierreRoot"></div>
+    </section>
+
+    <!-- Vista: Precios -->
+    <section class="view" id="view-precios" role="tabpanel" aria-label="Precios" hidden>
+      <div class="page-head">
+        <div>
+          <p class="eyebrow green"><span class="eyebrow-dot" style="background:var(--green);box-shadow:0 0 0 4px var(--green-soft)"></span>Mantén la carta al día</p>
+          <h1 class="page-title">Precios</h1>
+          <p class="page-sub">Ajusta cualquier precio en segundos.</p>
+        </div>
+        <div class="head-doodle green-doodle" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 13.2 13.2 21.5a2 2 0 0 1-2.8 0l-8-8V3.5h10l9.1 9.1a1 1 0 0 1 0 1.6Z"/><circle cx="8" cy="8" r="1.6"/></svg>
+        </div>
+      </div>
+
+      <div class="search-box">
+        <svg class="search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="priceSearch" type="search" inputmode="search" placeholder="Buscar producto para editar…" autocomplete="off" aria-label="Buscar producto para editar su precio">
+        <button class="clear-search" id="clearPriceSearch" type="button" aria-label="Borrar búsqueda" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+
+      <div class="price-summary" id="priceSummary"></div>
+      <div id="priceList" class="price-list"></div>
+
+      <div class="price-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><path d="m4 4 16 16"/><circle cx="12" cy="12" r="2.5"/></svg>
+        <div><strong>Precio $0 = producto oculto.</strong><span>Desaparece de la pantalla de pedido, pero puedes activarlo de nuevo cuando quieras. Los pedidos ya guardados no cambian.</span></div>
+      </div>
+
+      <div class="reset-zone">
+        <button type="button" class="reset-btn" id="resetPricesBtn">Restaurar precios originales</button>
+        <p>Toca dos veces para confirmar. No borra pedidos.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-foot">
+    Hecho con <span class="foot-heart">♥</span> para Mad · Tus datos se guardan solo en este dispositivo.
+  </footer>
+</div>
+
+<!-- Barra flotante de pedido -->
+<div class="summary-dock" id="summaryDock">
+  <button class="summary-bar is-empty" id="summaryBar" type="button" aria-haspopup="dialog" aria-expanded="false" aria-label="Abrir detalle del pedido">
+    <span class="sum-count" aria-hidden="true"><span class="sum-num" id="sumQty">0</span><span class="sum-lbl">prod.</span></span>
+    <span class="sum-info">
+      <span class="sum-title" id="sumTitle">Tu pedido está vacío</span>
+      <span class="sum-hint" id="sumHint">Toca un producto para empezar</span>
+    </span>
+    <span class="sum-total"><span class="sum-total-lbl">Total</span><span class="sum-amount" id="sumTotal">$0</span></span>
+    <span class="sum-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg></span>
+  </button>
+</div>
+
+<div class="overlay" id="overlay" hidden></div>
+
+<!-- Sheet: Detalle del pedido -->
+<aside class="sheet" id="orderSheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden>
+  <div class="sheet-panel">
+    <div class="sheet-grab" aria-hidden="true"></div>
+    <header class="sheet-head">
+      <div>
+        <p class="eyebrow">Revisa y cobra</p>
+        <h2 class="sheet-title" id="sheetTitle">Tu pedido</h2>
+        <p class="sheet-count" id="sheetCount">0 productos</p>
+      </div>
+      <button class="sheet-close" id="sheetClose" type="button" aria-label="Cerrar detalle del pedido">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg>
+      </button>
+    </header>
+    <div class="sheet-body">
+      <div id="sheetItems" class="sheet-items"></div>
+      <div class="delivery-block" id="deliveryBlock">
+        <div class="delivery-head">
+          <h3>¿Cómo se entrega?</h3>
+          <span id="deliveryHint">Todos en mesa</span>
+        </div>
+        <div class="delivery-options" id="deliveryOptions">
+          <button class="delivery-btn is-selected" type="button" data-delivery="mesa" aria-pressed="true">
+            <span class="delivery-ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11h18M5 11V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v5M4 11v9M20 11v9M9 11v9M15 11v9"/></svg>
+            </span>
+            <span class="delivery-label">Todos en mesa</span>
+            <span class="delivery-check" aria-hidden="true"></span>
+          </button>
+          <button class="delivery-btn" type="button" data-delivery="llevar" aria-pressed="false">
+            <span class="delivery-ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l2 6H4l2-6Z"/><path d="M4 9v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9"/><path d="M9 13h6"/></svg>
+            </span>
+            <span class="delivery-label">Todos para llevar</span>
+            <span class="delivery-note">+$1.000 ensaladas y postres</span>
+            <span class="delivery-check" aria-hidden="true"></span>
+          </button>
+        </div>
+      </div>
+      <div class="pay-block" id="payBlock">
+        <div class="pay-head">
+          <h3>¿Cómo pagó?</h3>
+          <span id="payHint">Elige una forma de pago</span>
+        </div>
+        <div class="pay-options" id="payOptions">
+          <button class="pay-btn" type="button" data-pay="efectivo" aria-pressed="false">
+            <span class="pay-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="12" rx="2.5"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5h.01M18 14.5h.01"/></svg></span>
+            <span class="pay-label">Efectivo</span>
+            <span class="pay-check" aria-hidden="true"></span>
+          </button>
+          <button class="pay-btn" type="button" data-pay="nequi" aria-pressed="false">
+            <span class="pay-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="2.5" width="11" height="19" rx="3"/><path d="M10.5 18.5h3"/><path d="M9.5 8.5h5M9.5 12h5"/></svg></span>
+            <span class="pay-label">Nequi</span>
+            <span class="pay-check" aria-hidden="true"></span>
+          </button>
+          <button class="pay-btn" type="button" data-pay="daviplata" aria-pressed="false">
+            <span class="pay-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M10 18h4"/><path d="M9.5 7.5h2.5a2.5 2.5 0 0 1 0 5H9.5V7.5Z"/></svg></span>
+            <span class="pay-label">Daviplata</span>
+            <span class="pay-check" aria-hidden="true"></span>
+          </button>
+          <button class="pay-btn" type="button" data-pay="bold" aria-pressed="false">
+            <span class="pay-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="3" width="13" height="18" rx="2.5"/><rect x="8" y="5.5" width="8" height="4" rx="1"/><circle cx="9" cy="12.5" r=".8" fill="currentColor"/><circle cx="12" cy="12.5" r=".8" fill="currentColor"/><circle cx="15" cy="12.5" r=".8" fill="currentColor"/><circle cx="9" cy="15.5" r=".8" fill="currentColor"/><circle cx="12" cy="15.5" r=".8" fill="currentColor"/><circle cx="15" cy="15.5" r=".8" fill="currentColor"/></svg></span>
+            <span class="pay-label">Bold</span>
             <span class="pay-check" aria-hidden="true"></span>
           </button>
           <button class="pay-btn" type="button" data-pay="transferencia" aria-pressed="false">
