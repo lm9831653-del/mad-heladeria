@@ -476,6 +476,90 @@ svg {
   height: 20px
 }
 
+/* ===== EDIT BANNER ===== */
+.edit-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 13px;
+  margin-bottom: 12px;
+  border-radius: 16px;
+  background: var(--purple-soft);
+  border: 1.5px solid var(--purple);
+  color: var(--purple-deep);
+  animation: fadeIn .2s ease;
+}
+
+.edit-banner[hidden] {
+  display: none !important;
+}
+
+.edit-banner-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.eb-tag {
+  font-size: 9.5px;
+  font-weight: 900;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  color: var(--purple);
+}
+
+.eb-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.eb-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.eb-btn {
+  height: 33px;
+  padding: 0 11px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .12s ease, opacity .15s ease;
+}
+
+.eb-btn:active {
+  transform: scale(.95);
+}
+
+.eb-btn.open {
+  background: var(--purple);
+  color: #fff;
+  border: 0;
+}
+
+.eb-btn.cancel {
+  background: var(--surface);
+  color: var(--muted);
+  border: 1.5px solid var(--line);
+}
+
+.eb-btn.cancel:hover {
+  color: var(--danger);
+  border-color: var(--danger-soft);
+}
+
 /* ===== SEARCH ===== */
 .search-box {
   position: relative;
@@ -729,7 +813,11 @@ svg {
   transition: transform .13s ease, border-color .16s ease, background .16s ease, box-shadow .16s ease;
   overflow: hidden;
   cursor: pointer;
-  user-select: none
+  user-select: none;
+  touch-action: manipulation;
+  contain: layout style;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 124px
 }
 
 .product-card::after {
@@ -1252,7 +1340,10 @@ svg {
   border-radius: 20px;
   padding: 14px;
   box-shadow: var(--shadow-sm);
-  transition: border-color .16s ease, background .16s ease
+  transition: border-color .16s ease, background .16s ease;
+  contain: layout style;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 120px
 }
 
 .order-card.is-done {
@@ -1303,9 +1394,29 @@ svg {
   color: var(--purple-deep)
 }
 
+.pay-chip.daviplata {
+  background: #FFE4E6;
+  color: #BE123C
+}
+
+.pay-chip.bold {
+  background: #FFEDD5;
+  color: #C2410C
+}
+
 .pay-chip.transferencia {
   background: var(--blue-soft);
   color: var(--blue)
+}
+
+[data-theme="dark"] .pay-chip.daviplata {
+  background: #40131B;
+  color: #FDA4AF
+}
+
+[data-theme="dark"] .pay-chip.bold {
+  background: #422006;
+  color: #FDBA74
 }
 
 .oc-items {
@@ -1434,6 +1545,20 @@ svg {
 
 :root[data-theme="dark"] .deliver-btn.is-done {
   color: #0D2418
+}
+
+.edit-btn {
+  flex: none;
+  padding: 0 11px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  border: 1.5px solid var(--line);
+}
+
+.edit-btn:hover {
+  background: var(--purple-soft);
+  color: var(--purple-deep);
+  border-color: transparent;
 }
 
 .delete-btn {
@@ -1719,6 +1844,116 @@ svg {
   transform: scale(.92)
 }
 
+/* Fila para llevar individual en ensaladas y postres */
+.oi-takeaway-row {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  margin-top: 3px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1.5px dashed var(--line);
+}
+
+.oi-takeaway-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.oi-takeaway-title {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1.2;
+}
+
+.oi-takeaway-breakdown {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  line-height: 1.25;
+}
+
+.oi-takeaway-breakdown .tb-mesa {
+  color: var(--ink-2);
+}
+
+.oi-takeaway-breakdown .tb-llevar {
+  color: var(--pink-deep);
+  font-weight: 800;
+}
+
+.oi-takeaway-breakdown .tb-subhint {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.oi-takeaway-stepper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--surface-2);
+  padding: 3px 5px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  flex-shrink: 0;
+}
+
+.oi-step-btn {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform .1s ease, background .15s ease, opacity .15s ease;
+}
+
+.oi-step-btn svg {
+  width: 13px;
+  height: 13px;
+}
+
+.oi-step-btn:active:not(:disabled) {
+  transform: scale(0.9);
+}
+
+.oi-step-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  border-color: transparent;
+  background: transparent;
+}
+
+.oi-step-btn.plus {
+  background: var(--pink-soft);
+  color: var(--pink-deep);
+  border-color: transparent;
+}
+
+.oi-step-btn.plus:disabled {
+  background: transparent;
+  color: var(--muted);
+}
+
+.oi-step-qty {
+  min-width: 20px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
 .sheet-empty {
   padding: 25px 10px 15px;
   text-align: center
@@ -1895,6 +2130,11 @@ svg {
   color: var(--muted)
 }
 
+.delivery-chip.mixto {
+  background: var(--purple-soft);
+  color: var(--purple-deep)
+}
+
 .oc-llevar {
   color: var(--pink);
   font-weight: 800;
@@ -1931,8 +2171,19 @@ svg {
 
 .pay-options {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 7px
+}
+
+.pay-btn:nth-child(1),
+.pay-btn:nth-child(2),
+.pay-btn:nth-child(3) {
+  grid-column: span 2
+}
+
+.pay-btn:nth-child(4),
+.pay-btn:nth-child(5) {
+  grid-column: span 3
 }
 
 .pay-btn {
@@ -3131,6 +3382,7 @@ svg {
 }
 
 .deliver-btn,
+.edit-btn,
 .delete-btn {
   min-height: 44px;
   height: 44px
@@ -3306,6 +3558,10 @@ body.is-locked .toast {
     font-size: 11px
   }
 
+  .edit-btn {
+    padding: 0 10px
+  }
+
   .delete-btn {
     padding: 0 10px
   }
@@ -3410,6 +3666,10 @@ body.is-locked .toast {
 
   .order-card {
     padding: 16px
+  }
+
+  .edit-btn {
+    padding: 0 13px
   }
 
   .delete-btn {
@@ -3562,4 +3822,194 @@ body.is-locked .toast {
     transition-duration: .01ms !important;
     scroll-behavior: auto !important
   }
+}
+
+/* ===== GASTOS DEL DÍA ===== */
+.gastos-panel {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 2px dashed var(--line)
+}
+
+.gastos-form {
+  display: flex;
+  gap: 7px;
+  margin: 10px 0 14px;
+  align-items: center
+}
+
+.gastos-form #gastoNameInput {
+  flex: 1;
+  height: 46px;
+  border-radius: 13px;
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  padding: 0 13px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  outline: none;
+  transition: border-color .15s
+}
+
+.gastos-form #gastoNameInput:focus {
+  border-color: var(--pink)
+}
+
+.gastos-price-label {
+  position: relative;
+  flex: 0 0 100px
+}
+
+.gastos-price-label>span {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: 800;
+  color: var(--muted);
+  font-size: 13px;
+  pointer-events: none
+}
+
+.gastos-price-label input {
+  width: 100%;
+  height: 46px;
+  border-radius: 13px;
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  padding: 0 11px 0 22px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ink);
+  outline: none;
+  transition: border-color .15s
+}
+
+.gastos-price-label input:focus {
+  border-color: var(--pink)
+}
+
+.gastos-add-btn {
+  height: 46px;
+  padding: 0 14px;
+  border-radius: 13px;
+  background: var(--green-soft);
+  color: var(--green-deep);
+  font-size: 12px;
+  font-weight: 900;
+  border: 0;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform .12s ease, background .12s
+}
+
+.gastos-add-btn:active {
+  transform: scale(.95);
+  background: var(--green)
+}
+
+.gasto-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 2px;
+  border-bottom: 1px dashed var(--line)
+}
+
+.gasto-name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink)
+}
+
+.gasto-price {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--danger);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap
+}
+
+.gasto-del {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 16px;
+  font-weight: 900;
+  border: 0;
+  cursor: pointer;
+  flex: none;
+  transition: transform .1s ease
+}
+
+.gasto-del:active {
+  transform: scale(.88)
+}
+
+.gasto-empty {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 8px 2px;
+  margin: 0
+}
+
+.gastos-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 11px 2px 2px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--muted)
+}
+
+.gastos-total-row strong {
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--danger)
+}
+
+/* Cierre: panel gastos */
+.panel-gastos .gasto-row.cierre-gasto {
+  border-bottom: 1px dashed var(--line);
+  padding: 7px 0
+}
+
+/* Ganancia neta panel */
+.ganancia-panel {
+  background: linear-gradient(135deg, var(--green-soft) 0%, var(--surface) 100%);
+  border: 1.5px solid var(--green)
+}
+
+.ganancia-panel .ganancia-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 13px;
+  font-weight: 700;
+  border-bottom: 1px dashed var(--line);
+  color: var(--ink)
+}
+
+.ganancia-panel .ganancia-row.total {
+  border-bottom: 0;
+  font-size: 16px;
+  font-weight: 900;
+  padding-top: 11px
+}
+
+.g-red {
+  color: var(--danger)
+}
+
+.g-green {
+  color: var(--green-deep);
+  font-family: var(--display)
 }
